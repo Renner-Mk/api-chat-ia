@@ -4,3 +4,10 @@ export interface ResponseData<T = unknown> {
   message: string;
   data?: T;
 }
+
+export interface UserIndexDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}

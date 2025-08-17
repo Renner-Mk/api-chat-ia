@@ -1,14 +1,15 @@
 import express from "express";
 import cors from "cors";
 import { WebSocketServer } from "ws";
-import { registerWSHandlers } from "./server/ws/chat.webS.js";
+import { registerWSHandlers } from "./server/ws/index.js";
+import userRouter from "./server/router/user.routes.js";
 
 export function createServer(port: number) {
   const app = express();
   app.use(express.json());
   app.use(cors());
 
-  // app.use(geminiRouter);
+  app.use(userRouter);
 
   const server = app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);

@@ -12,19 +12,8 @@ export class GeminiService {
       body: JSON.stringify({
         contents: [
           {
-            parts: [
-              {
-                text:
-                  "Olá! Hoje é segunda-feira, 15 de abril de 2024.\n" +
-                  "\n" +
-                  "Quanto à hora, preciso que você me diga sua localização para que eu possa te informar a hora exata. 😊",
-              },
-            ],
-            role: "model",
-          },
-          {
-            role: "user",
             parts: [{ text: data }],
+            role: "user",
           },
         ],
       }),
