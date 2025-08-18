@@ -3,6 +3,7 @@ import cors from "cors";
 import { WebSocketServer } from "ws";
 import { registerWSHandlers } from "./server/ws/index.js";
 import userRouter from "./server/router/user.routes.js";
+import authRouter from "./server/router/auth.routes.js";
 
 export function createServer(port: number) {
   const app = express();
@@ -10,6 +11,7 @@ export function createServer(port: number) {
   app.use(cors());
 
   app.use(userRouter);
+  app.use(authRouter);
 
   const server = app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
