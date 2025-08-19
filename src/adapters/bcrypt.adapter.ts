@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { envs } from "../envs/index.js";
 
 export class BcryptAdapter {
-  constructor(private readonly salt: number = envs.BCRYPT_SALT) {}
+  private readonly salt: number = envs.BCRYPT_SALT;
 
   public async generateHash(plainText: string): Promise<string> {
     const hash = await bcrypt.hash(plainText, this.salt);

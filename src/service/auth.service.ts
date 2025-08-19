@@ -1,12 +1,11 @@
-import ms from "ms";
 import repository from "../database/prisma.connection.js";
 
 import { BcryptAdapter } from "../adapters/bcrypt.adapter.js";
 import { JWTAdapter } from "../adapters/jwt.adapter.js";
 import { AuthUserDto, LoginDto } from "../dtos/auth.dto.js";
-import { envs } from "../envs/index.js";
 import { HTTPError } from "../utils/http.error.js";
 import { emailLowerCase } from "../utils/captalizeWords.js";
+import { StatusCodes } from "http-status-codes";
 
 export class AuthService {
   private readonly bcrypt = new BcryptAdapter();
@@ -20,7 +19,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new HTTPError(401, "Credenciais inválidas");
+      throw new HTTPError(StatusCodes.UNAUTHORIZED, "Credenciais inválidas");
     }
 
     const isPasswordMatch = await this.bcrypt.compareHash({
@@ -29,13 +28,10 @@ export class AuthService {
     });
 
     if (!isPasswordMatch) {
-      throw new HTTPError(401, "Credenciais inválidas");
+      throw new HTTPError(StatusCodes.UNAUTHORIZED, "Credenciais inválidas");
     }
 
-    const jwt = new JWTAdapter(
-      envs.JWT_SECRET_KEY,
-      envs.JWT_EXPIRE_IN as ms.StringValue
-    );
+    const jwt = new JWTAdapter();
 
     const authUser: AuthUserDto = {
       id: user.id,
@@ -45,9 +41,11 @@ export class AuthService {
 
     const token = jwt.generateToken(authUser);
 
-    console.log({
-      authToken: token,
-      authUser,
+    await repository.user.update({
+      where: { id: user.id },
+      data: {
+        token,
+      },
     });
 
     return {

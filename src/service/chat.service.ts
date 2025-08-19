@@ -6,33 +6,33 @@ import { ResponseData } from "../types/index.js";
 
 export class ChatService {
   public async create(userId: string): Promise<ResponseData<chatDTO>> {
-    const chat = new Chat(userId);
-    const createChat = await repository.chat.create({
-      data: {
-        id: chat.id,
-        userId: chat.userId,
-      },
-      select: {
-        id: true,
-        userId: true,
-        updatedAt: true,
-      },
-    });
+    try {
+      const chat = new Chat(userId);
+      const createChat = await repository.chat.create({
+        data: {
+          id: chat.id,
+          userId: chat.userId,
+        },
+        select: {
+          id: true,
+          userId: true,
+          updatedAt: true,
+        },
+      });
 
-    if (!createChat) {
+      return {
+        success: true,
+        code: StatusCodes.CREATED,
+        message: "Chat Criado",
+        data: createChat,
+      };
+    } catch (error) {
       return {
         success: false,
         code: StatusCodes.BAD_REQUEST,
         message: "Erro ao criar o Chat",
       };
     }
-
-    return {
-      success: true,
-      code: StatusCodes.CREATED,
-      message: "Chat Criado",
-      data: createChat,
-    };
   }
 
   public async index(userId: string): Promise<ResponseData<chatDTO[]>> {
@@ -58,23 +58,23 @@ export class ChatService {
   }
 
   public async delete(id: string): Promise<ResponseData<chatDTO>> {
-    const chat = await repository.chat.delete({
-      where: { id },
-    });
+    try {
+      const chat = await repository.chat.delete({
+        where: { id },
+      });
 
-    if (!chat) {
+      return {
+        success: true,
+        code: StatusCodes.OK,
+        message: "Chat Deletado com sucesso",
+        data: chat,
+      };
+    } catch (error) {
       return {
         success: false,
         code: StatusCodes.BAD_REQUEST,
-        message: "Erro ao deletar o Chat",
+        message: "Erro ao deletar o Chat: registro não encontrado",
       };
     }
-
-    return {
-      success: true,
-      code: StatusCodes.OK,
-      message: "Chat Deletado com sucesso",
-      data: chat,
-    };
   }
 }

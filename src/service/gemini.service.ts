@@ -17,14 +17,6 @@ export class GeminiService {
       body: JSON.stringify({
         contents: [
           {
-            parts: [
-              {
-                text: `Nao responder a essa mensagem: ${dateTime} é a data de hoje e hora atual informações necessarias para o melhor funcionamento, responda as perguntas futuras com naturalidade`,
-              },
-            ],
-            role: "user",
-          },
-          {
             parts: [{ text: data.content }],
             role: data.sender,
           },

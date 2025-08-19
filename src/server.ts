@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 import { authWSHandleder, registerWSHandlers } from "./server/ws/index.js";
 import userRouter from "./server/router/user.routes.js";
 import authRouter from "./server/router/auth.routes.js";
+import chatRouter from "./server/router/chat.routes.js";
 
 export async function createServer(port: number) {
   const app = express();
@@ -12,6 +13,7 @@ export async function createServer(port: number) {
 
   app.use(userRouter);
   app.use(authRouter);
+  app.use(chatRouter);
 
   const server = app.listen(port, () => {
     console.log(`Servidor Rest rodando na porta ${port}`);
@@ -20,20 +22,23 @@ export async function createServer(port: number) {
   const wss = new WebSocketServer({ server });
 
   wss.on("connection", (ws, req) => {
-    const token = new URL(req.url!, "http://localhost").searchParams.get(
-      "token"
-    );
-    if (!token) {
-      ws.send(JSON.stringify({ error: "Token não fornecido" }));
+    try {
+      const token = new URL(req.url!, "http://localhost").searchParams.get(
+        "token"
+      );
+
+      if (!token) throw new Error("Token não fornecido");
+
+      if (!authWSHandleder(ws, token)) return;
+
+      console.log("Cliente Conectado");
+
+      registerWSHandlers(ws, wss);
+    } catch (err: any) {
+      ws.send(JSON.stringify({ type: "error", message: err.message }));
       ws.close();
       return;
     }
-
-    if (!authWSHandleder(ws, token)) return;
-
-    console.log("Cliente Conectado");
-
-    registerWSHandlers(ws, wss);
   });
 
   console.log(`Servidor WebSocket rodando ws://localhost:${port}`);

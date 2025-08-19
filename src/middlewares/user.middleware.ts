@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import repository from "../database/prisma.connection.js";
 import { missingFieldError, serverError } from "../utils/response.helpers.js";
+import { StatusCodes } from "http-status-codes";
 
 export async function validateUser(
   req: Request,
@@ -19,7 +20,7 @@ export async function validateUser(
     });
 
     if (userEmail) {
-      return res.status(400).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         code: res.statusCode,
         message: "Email ja cadastrado",

@@ -22,15 +22,14 @@ export async function authMiddleware(
       );
     }
 
-    const [, token] = auth.split(" ");
-    if (!token) throw new HTTPError(StatusCodes.UNAUTHORIZED, "Token inválido");
+    console.log(auth);
 
-    const jwt = new JWTAdapter(
-      envs.JWT_SECRET_KEY,
-      envs.JWT_EXPIRE_IN as ms.StringValue
-    );
+    if (!auth) throw new HTTPError(StatusCodes.UNAUTHORIZED, "Token inválido");
 
-    const data = jwt.decodeToken<AuthUserDto>(token);
+    const jwt = new JWTAdapter();
+    const data = jwt.decodeToken<AuthUserDto>(auth);
+
+    console.log(data);
 
     if (!data) {
       throw new HTTPError(StatusCodes.UNAUTHORIZED, "Token inválido.");

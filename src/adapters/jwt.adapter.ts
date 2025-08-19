@@ -1,21 +1,16 @@
 import jwt from "jsonwebtoken";
 import ms from "ms";
+import { envs } from "../envs/index.js";
 
 export class JWTAdapter {
-  private readonly secret: string;
-  private readonly expireIn: ms.StringValue;
-
-  constructor(secret: string, expireIn: ms.StringValue) {
-    this.secret = secret;
-    this.expireIn = expireIn;
-  }
+  private readonly secret: string = envs.JWT_SECRET_KEY;
+  private readonly expireIn: ms.StringValue =
+    envs.JWT_EXPIRE_IN as ms.StringValue;
 
   public generateToken(dado: string | Buffer | object): string {
-    const token = jwt.sign(dado, this.secret, {
+    return jwt.sign(dado, this.secret, {
       expiresIn: this.expireIn,
     });
-
-    return token;
   }
 
   public decodeToken<T>(token: string): T | undefined {
