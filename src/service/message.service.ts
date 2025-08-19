@@ -37,6 +37,12 @@ export class MessageService {
       const history = await repository.message.findMany({
         where: { chatId },
         orderBy: { createdAt: "asc" },
+        select: {
+          chatId: true,
+          sender: true,
+          content: true,
+          createdAt: true,
+        },
       });
 
       return {

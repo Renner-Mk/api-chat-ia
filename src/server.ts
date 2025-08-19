@@ -21,15 +21,11 @@ export async function createServer(port: number) {
 
   const wss = new WebSocketServer({ server });
 
-  wss.on("connection", (ws, req) => {
+  wss.on("connection", async (ws, req) => {
     try {
-      const token = new URL(req.url!, "http://localhost").searchParams.get(
-        "token"
-      );
+      const user = authWSHandleder(req, ws);
 
-      if (!token) throw new Error("Token não fornecido");
-
-      if (!authWSHandleder(ws, token)) return;
+      if (!user) return;
 
       console.log("Cliente Conectado");
 
