@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
 import { WebSocketServer } from "ws";
-import { registerWSHandlers, validateJWT } from "./server/ws/index.js";
+import { authWSHandleder, registerWSHandlers } from "./server/ws/index.js";
 import userRouter from "./server/router/user.routes.js";
 import authRouter from "./server/router/auth.routes.js";
 
-export function createServer(port: number) {
+export async function createServer(port: number) {
   const app = express();
   app.use(express.json());
   app.use(cors());
@@ -23,9 +23,13 @@ export function createServer(port: number) {
     const token = new URL(req.url!, "http://localhost").searchParams.get(
       "token"
     );
+    if (!token) {
+      ws.send(JSON.stringify({ error: "Token não fornecido" }));
+      ws.close();
+      return;
+    }
 
-    if (!token) return ws.close();
-    validateJWT(token);
+    if (!authWSHandleder(ws, token)) return;
 
     console.log("Cliente Conectado");
 
