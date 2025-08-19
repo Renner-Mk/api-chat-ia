@@ -1,36 +1,80 @@
-import type { ResponseData } from "../types/index.js";
-import * as dotenv from "dotenv";
+import { StatusCodes } from "http-status-codes";
+import repository from "../database/prisma.connection.js";
+import { chatDTO } from "../dtos/chat.dto.js";
+import { Chat } from "../models/chat.model.js";
+import { ResponseData } from "../types/index.js";
 
-dotenv.config();
-
-export class GeminiService {
-  public async chat(data: string): Promise<ResponseData> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: data }],
-            role: "user",
-          },
-        ],
-      }),
+export class ChatService {
+  public async create(userId: string): Promise<ResponseData<chatDTO>> {
+    const chat = new Chat(userId);
+    const createChat = await repository.chat.create({
+      data: {
+        id: chat.id,
+        userId: chat.userId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        updatedAt: true,
+      },
     });
 
-    const geminiReponse = await response.json();
-    console.log(geminiReponse.candidates[0].content);
-
-    if (!response.ok) {
-      throw new Error(`Erro na API Gemini: ${response.statusText}`);
+    if (!createChat) {
+      return {
+        success: false,
+        code: StatusCodes.BAD_REQUEST,
+        message: "Erro ao criar o Chat",
+      };
     }
 
     return {
       success: true,
-      code: 200,
-      message: "Resposta gerada com sucesso!",
-      data: geminiReponse.candidates[0].content,
+      code: StatusCodes.CREATED,
+      message: "Chat Criado",
+      data: createChat,
+    };
+  }
+
+  public async index(userId: string): Promise<ResponseData<chatDTO[]>> {
+    const chats = await repository.chat.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "asc" },
+      select: {
+        id: true,
+        userId: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      code: StatusCodes.OK,
+      message:
+        chats.length == 0
+          ? "Não há chats para Exibir"
+          : "Chats Listados com sucesso",
+      data: chats,
+    };
+  }
+
+  public async delete(id: string): Promise<ResponseData<chatDTO>> {
+    const chat = await repository.chat.delete({
+      where: { id },
+    });
+
+    if (!chat) {
+      return {
+        success: false,
+        code: StatusCodes.BAD_REQUEST,
+        message: "Erro ao deletar o Chat",
+      };
+    }
+
+    return {
+      success: true,
+      code: StatusCodes.OK,
+      message: "Chat Deletado com sucesso",
+      data: chat,
     };
   }
 }

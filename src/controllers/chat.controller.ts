@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import { GeminiService } from "../service/chat.service.js";
+import { GeminiService } from "../service/gemini.service.js";
 import { serverError } from "../utils/response.helpers.js";
 
 const geminiService = new GeminiService();
 
-export class GeminiController {
-  public async chat(req: Request, res: Response) {
+export class ChatController {
+  public async create(req: Request, res: Response) {
     try {
       const { prompt } = req.body;
       const result = await geminiService.chat(prompt);

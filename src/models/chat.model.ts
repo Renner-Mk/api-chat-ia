@@ -11,7 +11,7 @@ export class Chat {
     return this._id;
   }
 
-  get chatId(): string {
+  get userId(): string {
     return this._userId;
   }
 }
