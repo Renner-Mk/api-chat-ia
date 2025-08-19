@@ -3,7 +3,7 @@ import { UserCreateDTO } from "../dtos/user.dto.js";
 import { User } from "../models/user.model.js";
 import { ResponseData, UserIndexDTO } from "../types/index.js";
 import bcrypt from "bcrypt";
-import { captalizeWords, usernameLowerCase } from "../utils/captalizeWords.js";
+import { captalizeWords, emailLowerCase } from "../utils/captalizeWords.js";
 
 export class UserService {
   public async create({
@@ -20,7 +20,7 @@ export class UserService {
     const newUser = new User(
       nameFormated,
       lastNameFormated,
-      email.trim().toLowerCase(),
+      emailLowerCase(email),
       hashedPassword
     );
 

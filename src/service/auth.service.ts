@@ -6,6 +6,7 @@ import { JWTAdapter } from "../adapters/jwt.adapter.js";
 import { AuthUserDto, LoginDto } from "../dtos/auth.dto.js";
 import { envs } from "../envs/index.js";
 import { HTTPError } from "../utils/http.error.js";
+import { emailLowerCase } from "../utils/captalizeWords.js";
 
 export class AuthService {
   private readonly bcrypt = new BcryptAdapter();
@@ -15,16 +16,14 @@ export class AuthService {
     password,
   }: LoginDto): Promise<{ authToken: string; authUser: AuthUserDto }> {
     const user = await repository.user.findUnique({
-      where: { email: email.trim().toLowerCase() },
+      where: { email: emailLowerCase(email) },
     });
 
     if (!user) {
       throw new HTTPError(401, "Credenciais inválidas");
     }
 
-    const bcrypt = new BcryptAdapter();
-
-    const isPasswordMatch = await bcrypt.compareHash({
+    const isPasswordMatch = await this.bcrypt.compareHash({
       plainText: password,
       hash: user.password,
     });
@@ -45,7 +44,11 @@ export class AuthService {
     };
 
     const token = jwt.generateToken(authUser);
-    console.log(token);
+
+    console.log({
+      authToken: token,
+      authUser,
+    });
 
     return {
       authToken: token,

@@ -8,6 +8,6 @@ export function captalizeWords(text: string): string {
   return formatedText;
 }
 
-export function usernameLowerCase(text: string): string {
-  return text.trim().toLowerCase().split(" ").join("_");
+export function emailLowerCase(text: string): string {
+  return text.trim().toLowerCase();
 }
