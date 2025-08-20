@@ -4,6 +4,8 @@ import { User } from "../models/user.model.js";
 import { ResponseData } from "../types/index.js";
 import bcrypt from "bcrypt";
 import { captalizeWords, emailLowerCase } from "../utils/captalizeWords.js";
+import { HTTPError } from "../utils/http.error.js";
+import { StatusCodes } from "http-status-codes";
 
 export class UserService {
   public async create({

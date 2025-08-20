@@ -15,3 +15,17 @@ export function serverError(response: Response, error?: any) {
     message: error ? error.toString() : "Error genérico",
   });
 }
+
+export function serverResponse(
+  response: Response,
+  status: number,
+  message: string,
+  data?: Object
+) {
+  return response.status(status).json({
+    success: true,
+    code: response.statusCode,
+    message,
+    data,
+  });
+}

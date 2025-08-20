@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { serverError } from "../utils/response.helpers.js";
+import { serverError, serverResponse } from "../utils/response.helpers.js";
 import { ChatService } from "../service/chat.service.js";
 import { MessageService } from "../service/message.service.js";
 import { Message } from "../models/message.model.js";
@@ -15,17 +15,22 @@ export class ChatController {
 
       const result = await chatService.create(user.id);
 
-      if (!result) throw new Error(result);
+      if (!result) throw new Error("Erro ao criar criar chat");
 
       const newMessage = new Message(
-        result.data?.id!,
+        result.id,
         "user",
         `Nao responder a essa mensagem:Hoje é ${new Date()}, responda as perguntas futuras com naturalidade`
       );
 
       await messageService.create(newMessage);
 
-      return res.status(result.code).json(result);
+      serverResponse(
+        res,
+        StatusCodes.OK,
+        "Usuarios listados com sucesso!",
+        result
+      );
     } catch (error) {
       return serverError(res, error);
     }
@@ -37,13 +42,16 @@ export class ChatController {
 
       const result = await chatService.index(user.id);
 
-      if (result.length > 0) {
-        return res.status(StatusCodes.OK).json(result);
+      if (result.length === 0) {
+        serverResponse(res, StatusCodes.NOT_FOUND, "Não há chats para listar!");
       }
 
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Nenhum chat encontrado" });
+      serverResponse(
+        res,
+        StatusCodes.OK,
+        "Usuarios listados com sucesso!",
+        result
+      );
     } catch (error) {
       return serverError(res, error);
     }
@@ -55,7 +63,12 @@ export class ChatController {
 
       const result = await chatService.delete(chatId);
 
-      return res.status(StatusCodes.NO_CONTENT).json(result);
+      serverResponse(
+        res,
+        StatusCodes.OK,
+        "Usuarios listados com sucesso!",
+        result
+      );
     } catch (error) {
       return serverError(res, error);
     }
