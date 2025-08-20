@@ -5,9 +5,7 @@ export interface ResponseData<T = unknown> {
   data?: T;
 }
 
-export interface UserIndexDTO {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+export interface WSMessage {
+  sender: string;
+  content: string;
 }

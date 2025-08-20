@@ -1,10 +1,8 @@
-import { StatusCodes } from "http-status-codes";
 import repository from "../database/prisma.connection.js";
-import { messageDTO } from "../dtos/chat.dto.js";
+import { messageGetDTO, messageServiceDTO, msgDTO } from "../dtos/index.js";
 import { Message } from "../models/message.model.js";
-
 export class MessageService {
-  public async create(data: messageDTO) {
+  public async create(data: messageServiceDTO): Promise<msgDTO | null> {
     try {
       const newMessage = new Message(data.chatId, data.sender, data.content);
 
@@ -15,51 +13,34 @@ export class MessageService {
           sender: newMessage.sender,
           content: newMessage.content,
         },
+        select: {
+          id: true,
+          chatId: true,
+          sender: true,
+          content: true,
+        },
       });
 
-      return {
-        success: true,
-        code: StatusCodes.CREATED,
-        message: "Mensagem Criada",
-        data: createMessage,
-      };
+      return createMessage;
     } catch (error) {
-      return {
-        success: false,
-        code: StatusCodes.BAD_REQUEST,
-        message: "Erro ao criar mensagem",
-      };
+      return null;
     }
   }
 
-  public async history(chatId: string) {
+  public async history(chatId: string): Promise<messageGetDTO[]> {
     try {
       const history = await repository.message.findMany({
         where: { chatId },
         orderBy: { createdAt: "asc" },
         select: {
-          chatId: true,
           sender: true,
           content: true,
-          createdAt: true,
         },
       });
 
-      return {
-        success: true,
-        code: history.length > 0 ? StatusCodes.OK : StatusCodes.NO_CONTENT,
-        message:
-          history.length > 0
-            ? "Historico recuperado"
-            : "Não há historico na conversas",
-        data: history,
-      };
+      return history;
     } catch (error) {
-      return {
-        success: false,
-        code: StatusCodes.BAD_REQUEST,
-        message: "Erro ao buscar histórico",
-      };
+      return [];
     }
   }
 }

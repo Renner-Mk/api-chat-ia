@@ -3,6 +3,7 @@ import { serverError } from "../utils/response.helpers.js";
 import { ChatService } from "../service/chat.service.js";
 import { MessageService } from "../service/message.service.js";
 import { Message } from "../models/message.model.js";
+import { StatusCodes } from "http-status-codes";
 
 const chatService = new ChatService();
 const messageService = new MessageService();
@@ -19,8 +20,9 @@ export class ChatController {
       const newMessage = new Message(
         result.data?.id!,
         "user",
-        "Nao responder a essa mensagem: ${dateTime} é a data de hoje e hora atual informações necessarias para o melhor funcionamento, responda as perguntas futuras com naturalidade"
+        `Nao responder a essa mensagem:Hoje é ${new Date()}, responda as perguntas futuras com naturalidade`
       );
+
       await messageService.create(newMessage);
 
       return res.status(result.code).json(result);
@@ -35,7 +37,13 @@ export class ChatController {
 
       const result = await chatService.index(user.id);
 
-      return res.status(result.code).json(result);
+      if (result.length > 0) {
+        return res.status(StatusCodes.OK).json(result);
+      }
+
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Nenhum chat encontrado" });
     } catch (error) {
       return serverError(res, error);
     }
@@ -47,7 +55,7 @@ export class ChatController {
 
       const result = await chatService.delete(chatId);
 
-      return res.status(result.code).json(result);
+      return res.status(StatusCodes.NO_CONTENT).json(result);
     } catch (error) {
       return serverError(res, error);
     }

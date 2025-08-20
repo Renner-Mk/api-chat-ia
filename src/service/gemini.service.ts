@@ -1,82 +1,47 @@
-import { messageDTO } from "../dtos/chat.dto.js";
-import type { ResponseData } from "../types/index.js";
+import { geminiResponseDTO, messageGetDTO } from "../dtos/index.js";
+
 import * as dotenv from "dotenv";
-import { MessageService } from "./message.service.js";
 
 dotenv.config();
 
-const messageService = new MessageService();
-
 export class GeminiService {
-  public async chat(data: messageDTO): Promise<ResponseData> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  public async chat(data: messageGetDTO[]): Promise<geminiResponseDTO | null> {
+    try {
+      const geminiResponse = await this.gemini(data);
+      if (!geminiResponse) throw new Error("Erro na resposta do gemini");
 
-    const dateTime = new Date();
-    console.log(dateTime);
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: data.content }],
-            role: data.sender,
-          },
-        ],
-      }),
-    });
-
-    console.log(response);
-
-    const geminiReponse = await response.json();
-
-    if (!response.ok) {
-      throw new Error(`Erro na API Gemini: ${response.statusText}`);
+      return geminiResponse;
+    } catch (error) {
+      return null;
     }
-
-    return {
-      success: true,
-      code: 200,
-      message: "Resposta gerada com sucesso!",
-      data: geminiReponse.candidates[0].content,
-    };
   }
 
-  public async recapHistory(chatId: string) {
-    const historyResp = await messageService.history(chatId);
+  async gemini(data: messageGetDTO[]): Promise<geminiResponseDTO | null> {
+    try {
+      const hist = data.map((m) => ({
+        parts: [{ text: m.content }],
+        role: m.sender === "user" ? "user" : "model",
+      }));
 
-    const hist = historyResp.data?.map((m) => ({
-      parts: [{ text: m.content }],
-      role: m.sender === "user" ? "user" : "model",
-    }));
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: hist,
+        }),
+      });
 
-    const dateTime = new Date();
-    console.log(dateTime);
+      const geminiReponse = await response.json();
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: hist,
-      }),
-    });
+      if (!response.ok) {
+        throw new Error(`Erro na API Gemini: ${response.statusText}`);
+      }
 
-    console.log(response);
-
-    const geminiReponse = await response.json();
-
-    if (!response.ok) {
-      throw new Error(`Erro na API Gemini: ${response.statusText}`);
+      return geminiReponse.candidates[0].content;
+    } catch (error) {
+      return null;
     }
-
-    return {
-      success: true,
-      code: 200,
-      message: "Resposta gerada com sucesso!",
-      data: geminiReponse.candidates[0].content,
-    };
   }
 }

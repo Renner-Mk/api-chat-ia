@@ -3,9 +3,10 @@ import repository from "../database/prisma.connection.js";
 import { chatDTO } from "../dtos/chat.dto.js";
 import { Chat } from "../models/chat.model.js";
 import { ResponseData } from "../types/index.js";
+import { HTTPError } from "../utils/http.error.js";
 
 export class ChatService {
-  public async create(userId: string): Promise<ResponseData<chatDTO>> {
+  public async create(userId: string): Promise<chatDTO | null> {
     try {
       const chat = new Chat(userId);
       const createChat = await repository.chat.create({
@@ -20,25 +21,16 @@ export class ChatService {
         },
       });
 
-      return {
-        success: true,
-        code: StatusCodes.CREATED,
-        message: "Chat Criado",
-        data: createChat,
-      };
+      return createChat;
     } catch (error) {
-      return {
-        success: false,
-        code: StatusCodes.BAD_REQUEST,
-        message: "Erro ao criar o Chat",
-      };
+      return null;
     }
   }
 
-  public async index(userId: string): Promise<ResponseData<chatDTO[]>> {
+  public async index(userId: string): Promise<chatDTO[]> {
     const chats = await repository.chat.findMany({
       where: { userId },
-      orderBy: { updatedAt: "asc" },
+      orderBy: { updatedAt: "desc" },
       select: {
         id: true,
         userId: true,
@@ -46,35 +38,41 @@ export class ChatService {
       },
     });
 
-    return {
-      success: true,
-      code: StatusCodes.OK,
-      message:
-        chats.length == 0
-          ? "Não há chats para Exibir"
-          : "Chats Listados com sucesso",
-      data: chats,
-    };
+    return chats;
   }
 
-  public async delete(id: string): Promise<ResponseData<chatDTO>> {
+  public async delete(id: string): Promise<boolean> {
     try {
-      const chat = await repository.chat.delete({
+      await repository.chat.delete({
         where: { id },
       });
 
-      return {
-        success: true,
-        code: StatusCodes.OK,
-        message: "Chat Deletado com sucesso",
-        data: chat,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        code: StatusCodes.BAD_REQUEST,
-        message: "Erro ao deletar o Chat: registro não encontrado",
-      };
+      return true;
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        throw new HTTPError(StatusCodes.NOT_FOUND, "Chat não encontrado");
+      }
+      throw new HTTPError(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "Erro ao deletar chat"
+      );
     }
+  }
+
+  public async show(chatId: string): Promise<chatDTO> {
+    const chats = await repository.chat.findFirst({
+      where: { id: chatId },
+      select: {
+        id: true,
+        userId: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!chats) {
+      throw new HTTPError(StatusCodes.NOT_FOUND, "Chat não encontrado");
+    }
+
+    return chats;
   }
 }

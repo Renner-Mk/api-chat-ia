@@ -9,12 +9,6 @@ export interface geminiResponseDTO {
   role: string;
 }
 
-export interface messageDTO {
-  chatId: string;
-  sender: string;
-  content: string;
-}
-
 export interface chatDTO {
   id: string;
   userId: string;

@@ -22,14 +22,10 @@ export async function authMiddleware(
       );
     }
 
-    console.log(auth);
-
     if (!auth) throw new HTTPError(StatusCodes.UNAUTHORIZED, "Token inválido");
 
     const jwt = new JWTAdapter();
     const data = jwt.decodeToken<AuthUserDto>(auth);
-
-    console.log(data);
 
     if (!data) {
       throw new HTTPError(StatusCodes.UNAUTHORIZED, "Token inválido.");

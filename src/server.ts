@@ -24,12 +24,11 @@ export async function createServer(port: number) {
   wss.on("connection", async (ws, req) => {
     try {
       const user = authWSHandleder(req, ws);
-
       if (!user) return;
 
       console.log("Cliente Conectado");
 
-      registerWSHandlers(ws, wss);
+      registerWSHandlers(ws, user);
     } catch (err: any) {
       ws.send(JSON.stringify({ type: "error", message: err.message }));
       ws.close();
