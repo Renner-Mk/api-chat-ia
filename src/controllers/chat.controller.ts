@@ -17,20 +17,7 @@ export class ChatController {
 
       if (!result) throw new Error("Erro ao criar criar chat");
 
-      const newMessage = new Message(
-        result.id,
-        "user",
-        `Nao responder a essa mensagem:Hoje é ${new Date()}, responda as perguntas futuras com naturalidade`
-      );
-
-      await messageService.create(newMessage);
-
-      serverResponse(
-        res,
-        StatusCodes.OK,
-        "Usuarios listados com sucesso!",
-        result
-      );
+      serverResponse(res, StatusCodes.OK, "Chat Criado com sucesso!", result);
     } catch (error) {
       return serverError(res, error);
     }
@@ -49,7 +36,7 @@ export class ChatController {
       serverResponse(
         res,
         StatusCodes.OK,
-        "Usuarios listados com sucesso!",
+        "Chats listados com sucesso!",
         result
       );
     } catch (error) {
@@ -66,7 +53,7 @@ export class ChatController {
       serverResponse(
         res,
         StatusCodes.OK,
-        "Usuarios listados com sucesso!",
+        "Chats deletado com sucesso!",
         result
       );
     } catch (error) {

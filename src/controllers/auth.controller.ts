@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AuthService } from "../service/auth.service.js";
 import { StatusCodes } from "http-status-codes";
 import { onError } from "../utils/on-error.js";
+import { serverResponse } from "../utils/response.helpers.js";
 
 export class AuthController {
   public async login(req: Request, res: Response): Promise<void> {
@@ -12,11 +13,12 @@ export class AuthController {
 
       const result = await service.login({ email, password });
 
-      res.status(StatusCodes.OK).json({
-        success: true,
-        message: "Login realizado com sucesso.",
-        data: result,
-      });
+      serverResponse(
+        res,
+        StatusCodes.OK,
+        "Login realizado com sucesso.!",
+        result
+      );
     } catch (error) {
       onError(error, res);
     }
