@@ -33,13 +33,12 @@ export async function registerWSHandlers(ws: WebSocket, user: AuthUserDto) {
       const msg: wsDTO = JSON.parse(data.toString());
 
       const { chatId, content, action } = msg;
-      console.log(action);
 
       if (action === "newChat") {
         const initialMessage: messageServiceDTO = {
           chatId,
           sender: "user",
-          content: `Nao responder a essa mensagem: Hoje é ${new Date()}, responda as perguntas futuras com naturalidade`,
+          content: `Data e hora atual ${new Date()},`,
         };
 
         userMap.set(chatId, [initialMessage]);
@@ -58,7 +57,6 @@ export async function registerWSHandlers(ws: WebSocket, user: AuthUserDto) {
       switch (action) {
         case "getHistory":
           const messagesToSend = messages.slice(1);
-          console.log(messagesToSend);
 
           ws.send(
             JSON.stringify({
